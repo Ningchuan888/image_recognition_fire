@@ -42,23 +42,11 @@
 
 ## 分析
 
-### 大題拆解
+### break dowm
 
-```
-火焰 / 煙霧偵測
-├── 火焰偵測
-│   ├── 顏色特徵（HSV：紅橘色範圍）
-│   ├── 亮度 / 色度條件（YCrCb：高亮度、高 Cr、低 Cb）
-│   └── 形態學後處理（去雜訊、填補）
-├── 煙霧偵測
-│   ├── 顏色特徵（低飽和、灰白色）
-│   ├── 動態背景分離（MOG2 背景消去）
-│   └── 邊緣模糊度判斷（Laplacian 變異數）
-└── 警報狀態機
-    ├── 連續幀計數
-    ├── 警報觸發門檻
-    └── 冷卻時間控制
-```
+
+<img width="4159" height="652" alt="mermaid-diagram-2026-05-06-142100" src="https://github.com/user-attachments/assets/8e3027e4-b91a-4a65-8194-a23e8f579fa2" />
+
 
 ### 誤判來源分析
 
@@ -74,42 +62,19 @@
 
 ### 環境圖（Context Diagram）
 
-```
-[相機 / 影片] ──→ [ FireSmokeDetector ] ──→ [畫面顯示 / 影片輸出]
-       ↑                  ↑                          ↓
-  config.json         MOG2 背景模型               [警報輸出 (console)]
-```
+<img width="1915" height="652" alt="mermaid-diagram-2026-05-06-142224" src="https://github.com/user-attachments/assets/84cc89cf-417c-4b73-a20e-d28b3383c8bd" />
+
 
 ### 偵測流程
 
-```
-讀取影片幀
-    │
-    ├─→ detect_fire()
-    │       ├── BGR → HSV → 顏色遮罩
-    │       ├── BGR → YCrCb → 亮度/色度遮罩
-    │       ├── AND 合併 → 形態學後處理
-    │       └── 找輪廓 → 判斷面積 ≥ min_area
-    │
-    ├─→ detect_smoke()
-    │       ├── BGR → HSV → 低飽和遮罩
-    │       ├── MOG2 → 動態遮罩
-    │       ├── AND 合併 → 形態學後處理
-    │       └── 面積 ≥ min_area AND Laplacian ≤ max_laplacian_var
-    │
-    └─→ update_alarm_state()
-            ├── 連續幀計數
-            ├── 超過門檻 → fire_alarm / smoke_alarm
-            └── 冷卻時間檢查 → 輸出 alarm
-```
+<img width="2175" height="3082" alt="mermaid-diagram-2026-05-06-142314" src="https://github.com/user-attachments/assets/b714ac1e-ffdc-4690-bcf6-5991d978e839" />
+
 
 ### 警報狀態機（FSM）
 
-```
-[SAFE] ──(連續偵測 ≥ 門檻)──→ [ALARM]
-   ↑                                │
-   └────── (冷卻時間到 + 無偵測) ───┘
-```
+<img width="1038" height="716" alt="mermaid-diagram-2026-05-06-142411" src="https://github.com/user-attachments/assets/dff504f9-0f7e-4249-9bd7-5aa79230d6f0" />
+
+
 
 | 狀態 | 說明 |
 |---|---|
@@ -129,13 +94,8 @@
 
 ## 程式結構
 
-```
-.
-├── main.py          # 主程式：讀取影片、驅動偵測、顯示結果
-├── config.json      # 所有可調參數（HSV 範圍、面積門檻、警報設定等）
-├── requirements.txt # 依賴套件
-└── README.md        # 本文件
-```
+<img width="2048" height="492" alt="mermaid-diagram-2026-05-06-142859" src="https://github.com/user-attachments/assets/49c115c0-7254-43f5-b467-fbb0b2cc59d1" />
+
 
 ### config.json 參數說明
 
