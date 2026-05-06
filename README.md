@@ -7,8 +7,7 @@
 3. [設計](#設計)
 4. [程式結構](#程式結構)
 5. [驗證計畫](#驗證計畫)
-6. [快速開始](#快速開始)
-7. [參數調整](#參數調整)
+6. [參數調整](#參數調整)
 
 ---
 
@@ -182,31 +181,6 @@
 
 ---
 
-## 快速開始
-
-### 安裝
-
-```bash
-pip install -r requirements.txt
-```
-
-### 執行
-
-```bash
-# 即時相機（預設 webcam）
-python main.py --source 0
-
-# 指定影片檔
-python main.py --source test.mp4
-
-# 無頭模式（Raspberry Pi）
-python main.py --source 0 --no-display
-
-# 儲存標註結果
-python main.py --source test.mp4 --save-video output.mp4
-```
-
----
 
 ## 參數調整
 
