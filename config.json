@@ -1,0 +1,49 @@
+{
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fps": 15
+  },
+  "fire": {
+    "hsv_lower1": [
+      0,
+      80,
+      120
+    ],
+    "hsv_upper1": [
+      35,
+      255,
+      255
+    ],
+    "hsv_lower2": [
+      160,
+      80,
+      120
+    ],
+    "hsv_upper2": [
+      179,
+      255,
+      255
+    ],
+    "min_y": 120,
+    "min_cr": 135,
+    "max_cb": 150,
+    "min_area": 450
+  },
+  "smoke": {
+    "max_saturation": 70,
+    "min_value": 80,
+    "max_value": 235,
+    "min_area": 1200,
+    "max_laplacian_var": 180
+  },
+  "motion": {
+    "history": 300,
+    "var_threshold": 25
+  },
+  "alarm": {
+    "fire_consecutive_frames": 4,
+    "smoke_consecutive_frames": 12,
+    "cooldown_sec": 5
+  }
+}
