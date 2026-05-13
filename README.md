@@ -42,7 +42,7 @@
 
 ## 分析
 
-### break dowm
+### breakdown
 
 
 <img width="4159" height="652" alt="mermaid-diagram-2026-05-06-142100" src="https://github.com/user-attachments/assets/8e3027e4-b91a-4a65-8194-a23e8f579fa2" />
