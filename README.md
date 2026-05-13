@@ -27,7 +27,7 @@
 
 | 項目 | 規格 |
 |---|---|
-| 目標平台 | Raspberry Pi 4B 或同級設備 |
+| 目標平台 | Raspberry Pi 4 或同級設備 |
 | 解析度 | 640 × 480 |
 | 目標幀率 | 15 FPS |
 | 依賴套件 | `opencv-python`、`numpy` |
