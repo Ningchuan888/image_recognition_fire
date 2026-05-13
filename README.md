@@ -1,4 +1,4 @@
-# Raspberry Pi 3 火焰／煙霧偵測專題
+# Raspberry Pi 4 火焰／煙霧偵測專題
 
 ## 目錄
 
