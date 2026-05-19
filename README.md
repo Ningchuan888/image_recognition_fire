@@ -44,8 +44,8 @@
 
 ### breakdown
 
+<img width="10852" height="820" alt="mermaid-diagram-2026-05-19-164627" src="https://github.com/user-attachments/assets/2d540cca-8862-4ad1-83a2-98a293c3b015" />
 
-<img width="4159" height="652" alt="mermaid-diagram-2026-05-06-142100" src="https://github.com/user-attachments/assets/8e3027e4-b91a-4a65-8194-a23e8f579fa2" />
 
 
 ### 誤判來源分析
@@ -67,7 +67,7 @@
 
 ### 偵測流程
 
-<img width="2175" height="3082" alt="mermaid-diagram-2026-05-06-142314" src="https://github.com/user-attachments/assets/b714ac1e-ffdc-4690-bcf6-5991d978e839" />
+<img width="3620" height="3854" alt="mermaid-diagram-2026-05-19-161703" src="https://github.com/user-attachments/assets/18ea30cd-e219-49e2-a240-2d84deeb2729" />
 
 
 ### 警報狀態機（FSM）
@@ -91,11 +91,6 @@
 | `update_alarm_state(fire, smoke)` | 當前幀偵測結果 | `(alarm, fire_alarm, smoke_alarm)` |
 
 ---
-
-## 程式結構
-
-<img width="2048" height="492" alt="mermaid-diagram-2026-05-06-142859" src="https://github.com/user-attachments/assets/49c115c0-7254-43f5-b467-fbb0b2cc59d1" />
-
 
 ### config.json 參數說明
 
