@@ -4,7 +4,7 @@
     "height": 480,
     "fps": 15,
     "frame_skip": 2,
-    "roi": [0, 0, 640, 350] 
+    "roi": [0, 0, 640, 350]
   },
   "fire": {
     "hsv_lower1": [0, 80, 120],
@@ -14,14 +14,21 @@
     "min_y": 140,
     "min_cr": 135,
     "max_cb": 150,
-    "min_area": 450
+    "min_area": 450,
+    "canny_low": 50,
+    "canny_high": 150,
+    "flow_threshold": 15
   },
   "smoke": {
     "max_saturation": 100,
     "min_value": 70,
     "max_value": 240,
     "min_area": 1000,
-    "max_laplacian_var": 2000
+    "max_laplacian_var": 2000,
+    "canny_low": 30,
+    "canny_high": 80,
+    "flow_low": 3,
+    "flow_high": 40
   },
   "motion": {
     "history": 300,
