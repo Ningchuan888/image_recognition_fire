@@ -158,9 +158,21 @@
 
 | 問題 | 調整方式 |
 |---|---|
-| 火焰太敏感（誤報多） | 提高 `fire.min_area` 或 `fire.min_cr` |
-| 火焰偵測不到 | 降低 `fire.min_area` 或 `fire.min_y` |
-| 煙霧太敏感（誤報多） | 提高 `smoke.min_area` 或降低 `smoke.max_laplacian_var` |
-| 煙霧偵測不到 | 降低 `smoke.min_area` 或提高 `smoke.max_saturation` |
+| 火焰太敏感（誤報多） | 提高 `fire.min_area` 或 `fire.min_cr` 或 `fire.flow_threshold` |
+| 火焰偵測不到 | 降低 `fire.min_area` 或 `fire.min_y` 或 `fire.flow_threshold` |
+| 火焰邊緣抓不到 | 降低 `fire.canny_low` 或 `fire.canny_high` |
+| 火焰邊緣雜訊太多 | 提高 `fire.canny_low` 過濾弱邊緣 |
+| 火焰輪廓破碎不完整 | 高斯模糊核心已固定 5x5，可提高 `fire.min_area` 讓小碎塊被忽略 |
+| 靜止橘色物體誤判為火焰 | 提高 `fire.flow_threshold` 要求更明顯的移動 |
+| 快速移動物體誤判為火焰 | 降低 `fire.flow_threshold` 縮小通過範圍 |
+| 煙霧太敏感（誤報多） | 提高 `smoke.min_area` 或降低 `smoke.max_laplacian_var` 或縮小 `smoke.flow_high` |
+| 煙霧偵測不到 | 降低 `smoke.min_area` 或提高 `smoke.max_saturation` 或提高 `smoke.flow_high` |
+| 煙霧邊界太銳利誤判 | 降低 `smoke.canny_high` 讓更多區域被視為模糊 |
+| 靜止白色物體誤判為煙霧 | 提高 `smoke.flow_low` 排除移動太慢的區域 |
+| 快速移動物體誤判為煙霧 | 降低 `smoke.flow_high` 排除移動太快的區域 |
+| 煙霧輪廓太碎 | 高斯模糊核心已固定 9x9，可降低 `smoke.min_area` 允許較小區塊合併 |
+| 暗色煙霧偵測不到 | 降低 `smoke.min_value` 放寬亮度下限 |
+| 過亮區域誤判為煙霧 | 降低 `smoke.max_value` 排除太亮的區域 |
+| 光線變化造成背景誤判 | 提高 `motion.var_threshold` 讓 MOG2 更不敏感 |
 | 警報太頻繁 | 提高 `alarm.cooldown_sec` |
-| 警報反應太慢 | 降低 `alarm.fire_consecutive_frames` |
+| 警報反應太慢 | 降低 `alarm.fire_consecutive_frames` 或 `alarm.smoke_consecutive_frames` |
