@@ -96,26 +96,43 @@
 
 ```jsonc
 {
-  "camera":  { "width": 640, "height": 480, "fps": 15 },
+  "camera": {
+    "width": 640,
+    "height": 480,
+    "fps": 15,
+    "frame_skip": 2,
+    "roi": [0, 0, 640, 350]
+  },
   "fire": {
-    "hsv_lower1/upper1": "紅橘色 HSV 範圍（低段）",
-    "hsv_lower2/upper2": "紅色 HSV 範圍（高段，處理 Hue 環繞）",
-    "min_y":  "YCrCb 最低亮度",
-    "min_cr": "最低紅色分量",
-    "max_cb": "最高藍色分量",
-    "min_area": "最小有效輪廓面積（像素²）"
+    "hsv_lower1/upper1": "紅橘色 HSV 範圍（低段 Hue 0~35）",
+    "hsv_lower2/upper2": "紅色 HSV 範圍（高段 Hue 160~179，處理 Hue 環繞）",
+    "min_y":          "YCrCb 最低亮度（低於此值排除暗區）",
+    "min_cr":         "最低紅色分量（低於此值排除非火焰色）",
+    "max_cb":         "最高藍色分量（高於此值排除偏藍區域）",
+    "min_area":       "最小有效輪廓面積（像素²，低於此值視為雜訊）",
+    "canny_low":      "Canny 邊緣偵測下門檻（火焰邊緣明顯，建議 50）",
+    "canny_high":     "Canny 邊緣偵測上門檻（建議 150）",
+    "flow_threshold": "光流幅度門檻（超過才視為有移動，建議 15）"
   },
   "smoke": {
-    "max_saturation": "煙霧最大飽和度",
-    "min/max_value":  "灰白亮度範圍",
-    "min_area":       "最小有效輪廓面積",
-    "max_laplacian_var": "最大銳利度（超過代表非煙霧）"
+    "max_saturation":    "煙霧最大飽和度（煙霧為灰白低飽和，建議 100）",
+    "min_value":         "灰白亮度下限（低於此值為過暗，排除）",
+    "max_value":         "灰白亮度上限（高於此值為過亮，排除）",
+    "min_area":          "最小有效輪廓面積（像素²，低於此值視為雜訊）",
+    "max_laplacian_var": "最大銳利度（超過代表邊緣太清晰，非煙霧）",
+    "canny_low":         "Canny 邊緣偵測下門檻（煙霧邊界模糊，建議 30）",
+    "canny_high":        "Canny 邊緣偵測上門檻（建議 80）",
+    "flow_low":          "光流幅度下限（低於此值為靜止物體，排除）",
+    "flow_high":         "光流幅度上限（高於此值移動太快，非煙霧，排除）"
   },
-  "motion": { "history": 300, "var_threshold": 25 },
+  "motion": {
+    "history":       "MOG2 背景學習幀數（越大背景越穩定）",
+    "var_threshold": "MOG2 前景判斷門檻（越大越不敏感，建議 100）"
+  },
   "alarm": {
-    "fire_consecutive_frames":  "觸發火焰警報所需連續幀數",
-    "smoke_consecutive_frames": "觸發煙霧警報所需連續幀數",
-    "cooldown_sec": "兩次警報間的最短間隔（秒）"
+    "fire_consecutive_frames":  "觸發火焰警報所需連續幀數（越小反應越快）",
+    "smoke_consecutive_frames": "觸發煙霧警報所需連續幀數（煙霧較慢需較多幀）",
+    "cooldown_sec":             "兩次警報間的最短間隔（秒，避免重複警報）"
   }
 }
 ```
