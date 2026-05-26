@@ -44,7 +44,7 @@
 
 ### breakdown
 
-<img width="10852" height="820" alt="mermaid-diagram-2026-05-19-164627" src="https://github.com/user-attachments/assets/2d540cca-8862-4ad1-83a2-98a293c3b015" />
+<img width="4430" height="944" alt="mermaid-diagram-2026-05-26-172750" src="https://github.com/user-attachments/assets/adb08e4c-ce64-43c6-900b-b34786833f69" />
 
 
 
@@ -67,7 +67,7 @@
 
 ### 偵測流程
 
-<img width="3620" height="3854" alt="mermaid-diagram-2026-05-19-161703" src="https://github.com/user-attachments/assets/18ea30cd-e219-49e2-a240-2d84deeb2729" />
+<img width="3620" height="3598" alt="mermaid-diagram-2026-05-26-173045" src="https://github.com/user-attachments/assets/594244a2-a7b7-4b5b-9019-3029a435a2cb" />
 
 
 ### 警報狀態機（FSM）
