@@ -50,7 +50,8 @@
 
 ### 說明
 
-<img width="1901" height="570" alt="未命名" src="https://github.com/user-attachments/assets/193e547d-0741-48ba-8711-ac76cb9961ff" />
+<img width="1897" height="626" alt="未命名" src="https://github.com/user-attachments/assets/96983e71-fe30-4131-8451-469b962c55c7" />
+
 
 
 
