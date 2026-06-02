@@ -164,7 +164,66 @@ graph TD
 
 ### 偵測流程
 
-<img width="3620" height="3598" alt="mermaid-diagram-2026-05-26-173045" src="https://github.com/user-attachments/assets/594244a2-a7b7-4b5b-9019-3029a435a2cb" />
+```mermaid
+flowchart TD
+    START([讀取影像幀]) --> ROI
+    ROI["套用 ROI 遮罩\nbitwise_and"]
+    ROI --> FIRE_PROC & SMOKE_PROC
+
+    subgraph FIRE_PROC["detect_fire()"]
+        F_GAUSS["高斯模糊\nGaussianBlur(5x5)"]
+        F_COLOR["HSV + YCrCb 顏色遮罩"]
+        F_CANNY["Canny 邊緣 + 膨脹"]
+        F_FLOW["光流幅度遮罩\nmag > flow_threshold"]
+        F_AND["AND 合併\n顏色 AND 邊緣 AND 光流"]
+        F_MORPH["形態學\nOpen(3x3) + Close(11x11)"]
+        F_FILTER{"面積 ≥ min_area\nAND 長寬比 0.2~4.0"}
+        F_YES["fire_now = True"]
+        F_NO["fire_now = False"]
+        F_GAUSS --> F_COLOR & F_CANNY
+        F_FLOW --> F_AND
+        F_COLOR --> F_AND
+        F_CANNY --> F_AND
+        F_AND --> F_MORPH --> F_FILTER
+        F_FILTER -->|Yes| F_YES
+        F_FILTER -->|No| F_NO
+    end
+
+    subgraph SMOKE_PROC["detect_smoke()"]
+        S_GAUSS["高斯模糊\nGaussianBlur(9x9)"]
+        S_OTSU["Otsu 二值化\n自動灰白亮區"]
+        S_COLOR["顏色條件\n低飽和 中亮度"]
+        S_FLOW["光流幅度遮罩\nflow_low < mag < flow_high"]
+        S_CANNY["Canny 反向\nnot_sharp 模糊區"]
+        S_AND["AND 合併\n顏色 AND Otsu AND 光流 AND 邊緣少"]
+        S_MORPH["形態學\nOpen + Close(5x5)"]
+        S_FILTER{"面積 ≥ min_area\nAND 長寬比 0.1~5.0"}
+        S_YES["smoke_now = True"]
+        S_NO["smoke_now = False"]
+        S_GAUSS --> S_OTSU & S_COLOR & S_CANNY
+        S_FLOW --> S_AND
+        S_OTSU --> S_AND
+        S_COLOR --> S_AND
+        S_CANNY --> S_AND
+        S_AND --> S_MORPH --> S_FILTER
+        S_FILTER -->|Yes| S_YES
+        S_FILTER -->|No| S_NO
+    end
+
+    F_YES --> CNT
+    F_NO --> CNT
+    S_YES --> CNT
+    S_NO --> CNT
+
+    CNT["連續幀計數\n+1 or reset to 0"]
+    CNT --> THR{"超過觸發門檻?"}
+    THR -->|No| SAFE["alarm = False\nSAFE 狀態"]
+    THR -->|Yes| COOL{"距上次警報\n> cooldown_sec?"}
+    COOL -->|No| SAFE
+    COOL -->|Yes| TRIGGER["alarm = True\n輸出 ALARM log"]
+    TRIGGER --> END([顯示結果 / 寫入影片])
+    SAFE --> END
+```
 
 
 ### 警報狀態機（FSM）
