@@ -28,7 +28,9 @@
     "canny_low": 30,
     "canny_high": 80,
     "flow_low": 3,
-    "flow_high": 40
+    "flow_high": 40,
+    "angle_low": 210,
+    "angle_high": 330
   },
   "motion": {
     "history": 300,
