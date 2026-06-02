@@ -7,8 +7,7 @@
 3. [設計](#設計)
 4. [驗證計畫](#驗證計畫)
 5. [參數調整](#參數調整)
-
----
+6. [版本更新紀錄](#版本更新紀錄)---
 
 ## 需求
 
@@ -42,7 +41,31 @@
 ## 分析
 
 ### breakdown
+#### 舊版
+```mermaid
+graph TD
+    ROOT["火焰 / 煙霧偵測系統"]
 
+    ROOT --> PRE["ROI 遮罩"]
+    ROOT ---> ALARM["警報狀態機"]
+    ROOT ---> DET["火焰煙霧偵測"]
+
+
+    ALARM --> A1["連續幀計數"]
+    ALARM --> A2["警報觸發門檻"]
+    ALARM --> A3["冷卻時間控制"]
+
+    DET --> D1["高斯模糊"]
+    DET --> D2["Otsu 二值化(煙霧)"]
+    DET --> D3["顏色遮罩"]
+    DET --> D4["Canny 邊緣偵測"]
+    DET --> D5["光流幅度遮罩"]
+    DET --> D6["AND 合併遮罩"]
+    DET --> D7["形態學後處理"]
+    DET --> D8["輪廓過濾"]
+```
+
+#### 更新版
 ```mermaid
 graph TD
     ROOT["火焰 / 煙霧偵測系統"]
@@ -52,20 +75,27 @@ graph TD
     ROOT --> DET["火焰煙霧偵測"]
 
     PRE --> P1["Resize\n縮放至 640x480"]
-    PRE --> P2["ROI 遮罩\nbitwise_and"]
+    PRE --> P2["ROI 遮罩"]
 
     ALARM --> A1["連續幀計數"]
     ALARM --> A2["警報觸發門檻"]
     ALARM --> A3["冷卻時間控制"]
 
     DET --> D1["高斯模糊"]
-    DET --> D2["Otsu 二值化(煙霧)"]
-    DET --> D3["顏色遮罩(火焰)"]
+    DET --> D2["MOG2 動態背景相減\n煙霧專用"]
+    DET --> D3["顏色遮罩\nHSV + YCrCb 火焰"]
     DET --> D4["Canny 邊緣偵測"]
-    DET --> D5["光流幅度遮罩"]
+    DET --> D5["光流幅度 + 方向遮罩\n火焰:幅度 / 煙霧:幅度+方向"]
     DET --> D6["AND 合併遮罩"]
-    DET --> D7["形態學後處理"]
-    DET --> D8["輪廓過濾"]
+    DET --> D7["形態學後處理\nOpen + Close"]
+    DET --> D8["輪廓過濾\n面積 + 長寬比\n+ Laplacian 上下限(煙霧)"]
+
+
+style PRE fill:#FFB347,stroke:#FF8C00,color:#000
+style P1 fill:#FFB347,stroke:#FF8C00,color:#000
+style D2 fill:#FFB347,stroke:#FF8C00,color:#000
+style D5 fill:#FFB347,stroke:#FF8C00,color:#000
+style D8 fill:#FFB347,stroke:#FF8C00,color:#000
 
 ```
 
@@ -164,6 +194,8 @@ graph TD
 
 ### 偵測流程
 
+#### 舊版
+
 ```mermaid
 flowchart TD
     START([讀取影像幀]) --> ROI
@@ -177,7 +209,7 @@ flowchart TD
         F_FLOW["光流幅度遮罩\nmag > flow_threshold"]
         F_AND["AND 合併\n顏色 AND 邊緣 AND 光流"]
         F_MORPH["形態學\nOpen(3x3) + Close(11x11)"]
-        F_FILTER{"面積 ≥ min_area\nAND 長寬比 0.2~4.0"}
+        F_FILTER{"面積 ≥ min_area\nAND 長寬比 0.2~4.0?"}
         F_YES["fire_now = True"]
         F_NO["fire_now = False"]
         F_GAUSS --> F_COLOR & F_CANNY
@@ -197,7 +229,7 @@ flowchart TD
         S_CANNY["Canny 反向\nnot_sharp 模糊區"]
         S_AND["AND 合併\n顏色 AND Otsu AND 光流 AND 邊緣少"]
         S_MORPH["形態學\nOpen + Close(5x5)"]
-        S_FILTER{"面積 ≥ min_area\nAND 長寬比 0.1~5.0"}
+        S_FILTER{"面積 ≥ min_area\nAND 長寬比 0.1~5.0\nAND Laplacian ≤ max_laplacian?"}
         S_YES["smoke_now = True"]
         S_NO["smoke_now = False"]
         S_GAUSS --> S_OTSU & S_COLOR & S_CANNY
@@ -205,6 +237,74 @@ flowchart TD
         S_OTSU --> S_AND
         S_COLOR --> S_AND
         S_CANNY --> S_AND
+        S_AND --> S_MORPH --> S_FILTER
+        S_FILTER -->|Yes| S_YES
+        S_FILTER -->|No| S_NO
+    end
+
+    F_YES --> ALARM_PROC
+    F_NO --> ALARM_PROC
+    S_YES --> ALARM_PROC
+    S_NO --> ALARM_PROC
+
+    subgraph ALARM_PROC["update_alarm_state()"]
+        CNT["連續幀計數\n+1 or reset to 0"]
+        THR{"超過觸發門檻?"}
+        COOL{"距上次警報\n> cooldown_sec?"}
+        TRIGGER["alarm = True\n輸出 ALARM log"]
+        SAFE["alarm = False\nSAFE 狀態"]
+        CNT --> THR
+        THR -->|No| SAFE
+        THR -->|Yes| COOL
+        COOL -->|No| SAFE
+        COOL -->|Yes| TRIGGER
+    end
+
+    ALARM_PROC --> END([顯示結果 / 寫入影片])
+```
+#### 更新版
+
+```mermaid
+flowchart TD
+    START([讀取影像幀]) --> ROI
+    ROI["套用 ROI 遮罩\nbitwise_and"]
+    ROI --> FIRE_PROC & SMOKE_PROC
+
+    subgraph FIRE_PROC["detect_fire()"]
+        F_GAUSS["高斯模糊\nGaussianBlur(5x5)"]
+        F_COLOR["HSV + YCrCb 顏色遮罩"]
+        F_CANNY["Canny 邊緣 + 膨脹"]
+        F_FLOW["光流幅度遮罩\nmag > flow_threshold"]
+        F_AND["AND 合併\n顏色 AND 邊緣 AND 光流"]
+        F_MORPH["形態學\nOpen(3x3) + Close(11x11)"]
+        F_FILTER{"面積 ≥ min_area\nAND 長寬比 0.2~4.0?"}
+        F_YES["fire_now = True"]
+        F_NO["fire_now = False"]
+        F_GAUSS --> F_COLOR & F_CANNY
+        F_FLOW --> F_AND
+        F_COLOR --> F_AND
+        F_CANNY --> F_AND
+        F_AND --> F_MORPH --> F_FILTER
+        F_FILTER -->|Yes| F_YES
+        F_FILTER -->|No| F_NO
+    end
+
+    subgraph SMOKE_PROC["detect_smoke()"]
+        S_GAUSS["高斯模糊\nGaussianBlur(9x9)"]
+        S_MOG["MOG2 動態前景遮罩\n去除靜態高光背景"]
+        S_COLOR["顏色條件\n低飽和 中亮度"]
+        S_CANNY["Canny 反向\nnot_sharp 模糊區"]
+        S_FLOW["光流幅度 + 方向遮罩\nflow_low < mag < flow_high\nangle_low < ang < angle_high"]
+        S_AND["AND 合併\nMOG2 AND 顏色 AND 光流 AND 邊緣少"]
+        S_MORPH["形態學\nOpen + Close(5x5)"]
+        S_FILTER{"面積 ≥ min_area\nAND 長寬比 0.1~5.0\nAND 15 ≤ Laplacian ≤ max_laplacian?"}
+        S_YES["smoke_now = True"]
+        S_NO["smoke_now = False"]
+        S_GAUSS --> S_MOG & S_COLOR & S_CANNY
+        S_MOG --> S_AND
+        S_COLOR --> S_AND
+        S_CANNY --> S_AND
+        S_FLOW --> S_AND
         S_AND --> S_MORPH --> S_FILTER
         S_FILTER -->|Yes| S_YES
         S_FILTER -->|No| S_NO
@@ -223,8 +323,12 @@ flowchart TD
     COOL -->|Yes| TRIGGER["alarm = True\n輸出 ALARM log"]
     TRIGGER --> END([顯示結果 / 寫入影片])
     SAFE --> END
-```
 
+    style S_MOG fill:#FFB347,stroke:#FF8C00,color:#000
+    style S_FLOW fill:#FFB347,stroke:#FF8C00,color:#000
+    style S_AND fill:#FFB347,stroke:#FF8C00,color:#000
+    style S_FILTER fill:#FFB347,stroke:#FF8C00,color:#000
+```
 
 ### 警報狀態機（FSM）
 
@@ -332,3 +436,64 @@ flowchart TD
 | 光線變化造成背景誤判 | 提高 `motion.var_threshold` 讓 MOG2 更不敏感 |
 | 警報太頻繁 | 提高 `alarm.cooldown_sec` |
 | 警報反應太慢 | 降低 `alarm.fire_consecutive_frames` 或 `alarm.smoke_consecutive_frames` |
+
+## 版本更新紀錄
+
+### v2 煙霧偵測優化（改善過曝背景誤判）
+
+針對「過度曝光的白色／灰色背景容易被誤判成煙霧」問題，進行以下五項改動：
+
+---
+
+#### 1. 啟用 MOG2 動態背景相減
+
+| | |
+|---|---|
+| **原本狀況** | `__init__` 中宣告了 MOG2 背景相減器，但在偵測邏輯裡完全沒用到。 |
+| **更新內容** | 將 MOG2 實裝進 `detect_smoke()` 中。 |
+| **效果** | 過度曝光的窗戶或牆面通常是**靜止**的，MOG2 會直接把這些不動的亮區判斷為背景並剔除。 |
+
+---
+
+#### 2. 光流法升級：加入「方向性」判定
+
+| | |
+|---|---|
+| **原本狀況** | 光流只計算物件「移動的幅度（Magnitude）」，只要有東西在動就可能觸發。 |
+| **更新內容** | 將光流計算函式升級為 `_optical_flow_features()`，同時回傳移動幅度與**移動角度（Angle）**，並在煙霧判斷中加入角度遮罩。 |
+| **效果** | 煙霧的物理特性是**向上飄散**。系統現在要求動態物件必須往上方移動（預設 210°～330° 之間）才會被判定為煙霧，大幅濾除雜訊。 |
+
+---
+
+#### 3. 捨棄 Otsu 全域二值化
+
+| | |
+|---|---|
+| **原本狀況** | 使用 Otsu 二值化來抓取灰白區域，但 Otsu 的特性是會「強迫」將畫面中最亮的部分切分出來。 |
+| **更新內容** | 完全移除 Otsu 二值化的步驟。 |
+| **效果** | 避免系統在沒有煙霧的正常畫面中，硬生生把最亮的燈光或反光當作前景煙霧。 |
+
+---
+
+#### 4. 新增 Laplacian 模糊度「下限」
+
+| | |
+|---|---|
+| **原本狀況** | 只有設定模糊度上限 `blur_val <= max_laplacian_var`。 |
+| **更新內容** | 加入了下限條件，改為 `15 <= blur_val <= max_laplacian_var`。 |
+| **效果** | 過度曝光的「純死白」區域，其 Laplacian 變異數會趨近於 0。加上下限（15）可以過濾掉這些純白區塊，確保偵測到的物件具備煙霧應有的微弱紋理。 |
+
+---
+
+#### 5. config.json 參數擴充
+
+| 新增參數 | 預設值 | 說明 |
+|---|---|---|
+| `smoke.angle_low` | `210` | 光流方向下限（度），低於此值排除 |
+| `smoke.angle_high` | `330` | 光流方向上限（度），高於此值排除 |
+
+讓你不用改程式碼，就能根據實際場地環境調整煙霧飄動的角度限制（例如現場有冷氣風扇導致煙霧往側邊飄，可以從設定檔放寬角度）。
+
+---
+
+**優化後觸發煙霧警報需同時滿足：有在動、往上飄、顏色對、不是純白死光。**
