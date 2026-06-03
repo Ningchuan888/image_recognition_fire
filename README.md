@@ -330,6 +330,15 @@ flowchart TD
     style S_FILTER fill:#FFB347,stroke:#FF8C00,color:#000
 ```
 
+| 順序 | 過濾條件 |
+|---|---|
+| 形態學後處理 | Open + Close(5x5) |
+| 第一層 | findContours 找所有輪廓 |
+| 第二層 | 面積 ≥ `min_area` |
+| 第三層 | 長寬比 0.1 ~ 5.0 |
+| 第四層 | Laplacian 變異數 `15 ≤ blur_val ≤ max_laplacian_var` |
+| 輸出 | `smoke_now = True / False` |
+
 ### 警報狀態機（FSM）
 
 <img width="1038" height="716" alt="mermaid-diagram-2026-05-06-142411" src="https://github.com/user-attachments/assets/dff504f9-0f7e-4249-9bd7-5aa79230d6f0" />
