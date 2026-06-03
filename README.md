@@ -91,8 +91,7 @@ graph TD
     DET --> D8["輪廓過濾\n面積 + 長寬比\n+ Laplacian 上下限(煙霧)"]
 
 
-style PRE fill:#FFB347,stroke:#FF8C00,color:#000
-style P1 fill:#FFB347,stroke:#FF8C00,color:#000
+
 style D2 fill:#FFB347,stroke:#FF8C00,color:#000
 style D5 fill:#FFB347,stroke:#FF8C00,color:#000
 style D8 fill:#FFB347,stroke:#FF8C00,color:#000
