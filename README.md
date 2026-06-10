@@ -191,7 +191,7 @@ style D8 fill:#FFB347,stroke:#FF8C00,color:#000
 <img width="1915" height="652" alt="mermaid-diagram-2026-05-06-142224" src="https://github.com/user-attachments/assets/84cc89cf-417c-4b73-a20e-d28b3383c8bd" />
 
 
-### 偵測流程
+### MSC 流程圖
 
 #### 舊版
 
